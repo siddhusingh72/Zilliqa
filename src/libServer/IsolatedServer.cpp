@@ -80,6 +80,18 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
       return ret;
     }
 
+    if (sender->GetNonce() + 1 != tx.GetNonce()) {
+      throw JsonRpcException(
+          RPC_INVALID_PARAMETER,
+          "Expected Nonce: " + to_string(sender->GetNonce() + 1));
+    }
+
+    if (sender->GetBalance() < tx.GetAmount()) {
+      throw JsonRpcException(
+          RPC_INVALID_PARAMETER,
+          "Insufficient Balance: " + sender->GetBalance().str());
+    }
+
     TransactionReceipt txreceipt;
     AccountStore::GetInstance().UpdateAccountsTemp(m_blocknum,
                                                    3  // Arbitrary values
