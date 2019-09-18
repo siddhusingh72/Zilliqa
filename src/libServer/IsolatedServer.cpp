@@ -22,10 +22,12 @@ using namespace jsonrpc;
 using namespace std;
 
 IsolatedServer::IsolatedServer(Mediator& mediator,
-                               AbstractServerConnector& server)
+                               AbstractServerConnector& server,
+                               const uint128_t& blocknum)
     : LookupServer(mediator, server),
       jsonrpc::AbstractServer<IsolatedServer>(server,
-                                              jsonrpc::JSONRPC_SERVER_V2) {
+                                              jsonrpc::JSONRPC_SERVER_V2),
+      m_blocknum(blocknum) {
   AbstractServer<IsolatedServer>::bindAndAddMethod(
       jsonrpc::Procedure("CreateTransaction", jsonrpc::PARAMS_BY_POSITION,
                          jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_OBJECT,
@@ -71,4 +73,10 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
   }
 
   return Json::Value();
+}
+
+string IsolatedServer::IncreaseBlocknum(const uint32_t& delta) {
+  m_blocknum += delta;
+
+  return m_blocknum.str();
 }

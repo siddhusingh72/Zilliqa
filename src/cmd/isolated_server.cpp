@@ -40,7 +40,6 @@ int readAccountJsonFromFile(const string& path) {
 
   try {
     for (const auto& i : _json.getMemberNames()) {
-      cout << i << endl;
       Address addr(i);
       uint128_t balance(_json[i]["amount"].asString());
       AccountStore::GetInstance().AddAccount(
@@ -55,12 +54,16 @@ int readAccountJsonFromFile(const string& path) {
 
 void help(const char* argv[]) {
   cout << "Usage" << endl;
-  cout << argv[0] << " --file [Path to Json Account File]" << endl;
+  cout << argv[0]
+       << " --file [Path to Json Account File] --port [Port to run "
+          "RPC]{default 5555}"
+       << endl;
 }
 
 int main(int argc, const char* argv[]) {
   string accountJsonFilePath;
-  uint port = 5555;
+  uint port{5555};
+  string blocknum_str{"1"};
 
   try {
     po::options_description desc("Options");
@@ -68,7 +71,9 @@ int main(int argc, const char* argv[]) {
     desc.add_options()("help,h", "Print help message")(
         "file,f", po::value<string>(&accountJsonFilePath)->required(),
         "Json file containing bootstrap accounts")(
-        "port,p", po::value<uint>(&port), "Port to run server on");
+        "port,p", po::value<uint>(&port), "Port to run server on")(
+        "blocknum,b", po::value<string>(&blocknum_str),
+        "Initial blocknumber {default : 1 }");
 
     po::variables_map vm;
 
@@ -101,13 +106,29 @@ int main(int argc, const char* argv[]) {
     Node node(mediator, 0, false);
     auto vd = make_shared<Validator>(mediator);
 
+    uint128_t blocknum;
+
+    try {
+      blocknum = uint128_t{blocknum_str};
+    } catch (exception& e) {
+      cerr << "Error: "
+           << "blocknum not numeric" << endl;
+      return ERROR_IN_COMMAND_LINE;
+    }
+
     mediator.RegisterColleagues(nullptr, &node, nullptr, vd.get());
 
     AccountStore::GetInstance().Init();
 
+    if (readAccountJsonFromFile(accountJsonFilePath)) {
+      cerr << "ERROR: "
+           << "Unable to parse account json file" << endl;
+      return ERROR_IN_COMMAND_LINE;
+    }
+
     auto isolatedServerConnector = make_unique<jsonrpc::SafeHttpServer>(port);
-    auto isolatedServer =
-        make_shared<IsolatedServer>(mediator, *isolatedServerConnector);
+    auto isolatedServer = make_shared<IsolatedServer>(
+        mediator, *isolatedServerConnector, blocknum);
 
     if (!isolatedServer
              ->jsonrpc::AbstractServer<IsolatedServer>::StartListening()) {
@@ -121,11 +142,6 @@ int main(int argc, const char* argv[]) {
       ;  // keep server running
     }
 
-    if (readAccountJsonFromFile(accountJsonFilePath)) {
-      cerr << "ERROR: "
-           << "Unable to parse account json file" << endl;
-      return ERROR_IN_COMMAND_LINE;
-    }
   } catch (std::exception& e) {
     std::cerr << "Unhandled Exception reached the top of main: " << e.what()
               << ", application will now exit" << std::endl;

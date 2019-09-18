@@ -24,15 +24,25 @@ class Mediator;
 
 class IsolatedServer : public LookupServer,
                        public jsonrpc::AbstractServer<IsolatedServer> {
+  uint128_t m_blocknum;
+
  public:
-  IsolatedServer(Mediator& mediator, jsonrpc::AbstractServerConnector& server);
+  IsolatedServer(Mediator& mediator, jsonrpc::AbstractServerConnector& server,
+                 const uint128_t& blocknum);
   ~IsolatedServer() = default;
 
   inline virtual void CreateTransactionI(const Json::Value& request,
                                          Json::Value& response) {
     response = this->CreateTransaction(request[0u]);
   }
+
+  inline virtual void IncreaseBlocknumI(const Json::Value& request,
+                                        Json::Value& response) {
+    response = this->IncreaseBlocknum(request[0u].asUInt());
+  }
+
   Json::Value CreateTransaction(const Json::Value& _json);
+  std::string IncreaseBlocknum(const uint32_t& delta);
 };
 
 #endif  // ZILLIQA_SRC_LIBSERVER_ISOLATEDSERVER_H_
