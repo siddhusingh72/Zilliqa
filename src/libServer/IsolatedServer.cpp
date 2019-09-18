@@ -30,6 +30,11 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
       m_blocknum(blocknum) {
   AbstractServer<IsolatedServer>::bindAndAddMethod(
       jsonrpc::Procedure("CreateTransaction", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_STRING, "param01", jsonrpc::JSON_INTEGER,
+                         NULL),
+      &IsolatedServer::CreateTransactionI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("IncreaseBlocknum", jsonrpc::PARAMS_BY_POSITION,
                          jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_OBJECT,
                          NULL),
       &IsolatedServer::CreateTransactionI);
