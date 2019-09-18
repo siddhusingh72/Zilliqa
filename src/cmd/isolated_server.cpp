@@ -56,7 +56,7 @@ void help(const char* argv[]) {
   cout << "Usage" << endl;
   cout << argv[0]
        << " --file [Path to Json Account File] --port [Port to run "
-          "RPC]{default 5555}"
+          "RPC] --blocknum [Initial blocknum]"
        << endl;
 }
 
@@ -71,7 +71,8 @@ int main(int argc, const char* argv[]) {
     desc.add_options()("help,h", "Print help message")(
         "file,f", po::value<string>(&accountJsonFilePath)->required(),
         "Json file containing bootstrap accounts")(
-        "port,p", po::value<uint>(&port), "Port to run server on")(
+        "port,p", po::value<uint>(&port),
+        "Port to run server on {default: 5555")(
         "blocknum,b", po::value<string>(&blocknum_str),
         "Initial blocknumber {default : 1 }");
 
