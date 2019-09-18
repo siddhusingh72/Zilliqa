@@ -30,14 +30,35 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
       m_blocknum(blocknum) {
   AbstractServer<IsolatedServer>::bindAndAddMethod(
       jsonrpc::Procedure("CreateTransaction", jsonrpc::PARAMS_BY_POSITION,
-                         jsonrpc::JSON_STRING, "param01", jsonrpc::JSON_INTEGER,
+                         jsonrpc::JSON_STRING, "param01", jsonrpc::JSON_OBJECT,
                          NULL),
       &IsolatedServer::CreateTransactionI);
   AbstractServer<IsolatedServer>::bindAndAddMethod(
       jsonrpc::Procedure("IncreaseBlocknum", jsonrpc::PARAMS_BY_POSITION,
-                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_OBJECT,
+                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_INTEGER,
                          NULL),
-      &IsolatedServer::CreateTransactionI);
+      &IsolatedServer::IncreaseBlocknumI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetBalance", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &LookupServer::GetBalanceI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure(
+          "GetSmartContractSubState", jsonrpc::PARAMS_BY_POSITION,
+          jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING, "param02",
+          jsonrpc::JSON_STRING, "param03", jsonrpc::JSON_ARRAY, NULL),
+      &LookupServer::GetSmartContractSubStateI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetSmartContractState", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &LookupServer::GetSmartContractStateI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetSmartContractCode", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &LookupServer::GetSmartContractCodeI);
 }
 
 Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
