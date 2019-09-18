@@ -106,10 +106,10 @@ int main(int argc, const char* argv[]) {
     Node node(mediator, 0, false);
     auto vd = make_shared<Validator>(mediator);
 
-    uint128_t blocknum;
+    uint64_t blocknum;
 
     try {
-      blocknum = uint128_t{blocknum_str};
+      blocknum = stoull(blocknum_str);
     } catch (exception& e) {
       cerr << "Error: "
            << "blocknum not numeric" << endl;

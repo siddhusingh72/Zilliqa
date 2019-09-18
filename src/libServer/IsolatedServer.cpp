@@ -23,7 +23,7 @@ using namespace std;
 
 IsolatedServer::IsolatedServer(Mediator& mediator,
                                AbstractServerConnector& server,
-                               const uint128_t& blocknum)
+                               const uint64_t& blocknum)
     : LookupServer(mediator, server),
       jsonrpc::AbstractServer<IsolatedServer>(server,
                                               jsonrpc::JSONRPC_SERVER_V2),
@@ -55,7 +55,8 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
     }
 
     TransactionReceipt txreceipt;
-    AccountStore::GetInstance().UpdateAccountsTemp(1000, 3  // Arbitrary values
+    AccountStore::GetInstance().UpdateAccountsTemp(m_blocknum,
+                                                   3  // Arbitrary values
                                                    ,
                                                    true, tx, txreceipt);
 
@@ -78,5 +79,5 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
 string IsolatedServer::IncreaseBlocknum(const uint32_t& delta) {
   m_blocknum += delta;
 
-  return m_blocknum.str();
+  return to_string(m_blocknum);
 }

@@ -24,11 +24,11 @@ class Mediator;
 
 class IsolatedServer : public LookupServer,
                        public jsonrpc::AbstractServer<IsolatedServer> {
-  uint128_t m_blocknum;
+  uint64_t m_blocknum;
 
  public:
   IsolatedServer(Mediator& mediator, jsonrpc::AbstractServerConnector& server,
-                 const uint128_t& blocknum);
+                 const uint64_t& blocknum);
   ~IsolatedServer() = default;
 
   inline virtual void CreateTransactionI(const Json::Value& request,
