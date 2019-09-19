@@ -340,7 +340,6 @@ bool LookupServer::ValidateTxn(const Transaction& tx, const Address& fromAddr,
     throw JsonRpcException(RPC_VERIFY_REJECTED, "Unable to verify transaction");
   }
 
-  unsigned int num_shards = m_mediator.m_lookup->GetShardPeers().size();
 
   if (fromAddr == Address()) {
     throw JsonRpcException(RPC_INVALID_ADDRESS_OR_KEY,
@@ -379,9 +378,6 @@ bool LookupServer::ValidateTxn(const Transaction& tx, const Address& fromAddr,
                                to_string(sender->GetNonce()) + ")");
   }
 
-  if (num_shards == 0) {
-    throw JsonRpcException(RPC_IN_WARMUP, "No Shards yet");
-  }
 
   return true;
 }
@@ -410,6 +406,11 @@ Json::Value LookupServer::CreateTransaction(const Json::Value& _json) {
     }
 
     const unsigned int num_shards = m_mediator.m_lookup->GetShardPeers().size();
+
+     if (num_shards == 0) {
+    throw JsonRpcException(RPC_IN_WARMUP, "No Shards yet");
+  }
+
     const unsigned int shard = Transaction::GetShardIndex(fromAddr, num_shards);
     unsigned int mapIndex = shard;
     switch (Transaction::GetTransactionType(tx)) {

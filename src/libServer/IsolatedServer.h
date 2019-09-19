@@ -25,6 +25,7 @@ class Mediator;
 class IsolatedServer : public LookupServer,
                        public jsonrpc::AbstractServer<IsolatedServer> {
   uint64_t m_blocknum;
+  uint128_t m_gasPrice{1};
 
  public:
   IsolatedServer(Mediator& mediator, jsonrpc::AbstractServerConnector& server,
@@ -40,7 +41,18 @@ class IsolatedServer : public LookupServer,
                                         Json::Value& response) {
     response = this->IncreaseBlocknum(request[0u].asUInt());
   }
+  inline virtual void GetMinimumGasPriceI(const Json::Value& request,
+                                        Json::Value& response) {
+  	(void)request;
+    response = this->GetMinimumGasPrice();
+  }
+  inline virtual void SetMinimumGasPriceI(const Json::Value& request,
+                                        Json::Value& response) {
+    response = this->SetMinimumGasPrice(request[0u].asString());
+  }
 
+  std::string GetMinimumGasPrice();
+  std::string SetMinimumGasPrice(const std::string& gasPrice);
   Json::Value CreateTransaction(const Json::Value& _json);
   std::string IncreaseBlocknum(const uint32_t& delta);
 };

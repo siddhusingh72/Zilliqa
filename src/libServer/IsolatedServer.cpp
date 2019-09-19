@@ -59,6 +59,16 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
                          jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
                          NULL),
       &LookupServer::GetSmartContractCodeI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetMinimumGasPrice", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_STRING,
+                         NULL),
+      &IsolatedServer::GetMinimumGasPriceI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("SetMinimumGasPrice", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_STRING,"param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &IsolatedServer::SetMinimumGasPriceI);
 }
 
 Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
@@ -92,6 +102,11 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
           "Insufficient Balance: " + sender->GetBalance().str());
     }
 
+    if(m_gasPrice > tx.GetGasPrice())
+    {
+      throw JsonRpcException(RPC_INVALID_PARAMETER, "Minimum gas price greater: "+m_gasPrice.str());
+    }
+
     TransactionReceipt txreceipt;
     AccountStore::GetInstance().UpdateAccountsTemp(m_blocknum,
                                                    3  // Arbitrary values
@@ -118,4 +133,30 @@ string IsolatedServer::IncreaseBlocknum(const uint32_t& delta) {
   m_blocknum += delta;
 
   return to_string(m_blocknum);
+}
+
+string IsolatedServer::SetMinimumGasPrice(const string& gasPrice)
+{
+  uint128_t newGasPrice;
+  try
+  { 
+    newGasPrice = move(uint128_t(gasPrice));
+  }
+  catch(exception& e)
+  {
+    throw JsonRpcException(RPC_INVALID_PARAMETER, "Gas price should be numeric");
+  }
+  if(newGasPrice < 1)
+  {
+    throw JsonRpcException(RPC_INVALID_PARAMETER, "Gas price cannot be less than 1");
+  }
+
+  m_gasPrice = move(newGasPrice);
+
+  return m_gasPrice.str();
+}
+
+string IsolatedServer::GetMinimumGasPrice()
+{
+  return m_gasPrice.str();
 }
