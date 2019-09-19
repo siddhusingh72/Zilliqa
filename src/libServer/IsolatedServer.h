@@ -42,12 +42,12 @@ class IsolatedServer : public LookupServer,
     response = this->IncreaseBlocknum(request[0u].asUInt());
   }
   inline virtual void GetMinimumGasPriceI(const Json::Value& request,
-                                        Json::Value& response) {
-  	(void)request;
+                                          Json::Value& response) {
+    (void)request;
     response = this->GetMinimumGasPrice();
   }
   inline virtual void SetMinimumGasPriceI(const Json::Value& request,
-                                        Json::Value& response) {
+                                          Json::Value& response) {
     response = this->SetMinimumGasPrice(request[0u].asString());
   }
 

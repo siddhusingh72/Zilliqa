@@ -61,12 +61,11 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
       &LookupServer::GetSmartContractCodeI);
   AbstractServer<IsolatedServer>::bindAndAddMethod(
       jsonrpc::Procedure("GetMinimumGasPrice", jsonrpc::PARAMS_BY_POSITION,
-                         jsonrpc::JSON_STRING,
-                         NULL),
+                         jsonrpc::JSON_STRING, NULL),
       &IsolatedServer::GetMinimumGasPriceI);
   AbstractServer<IsolatedServer>::bindAndAddMethod(
       jsonrpc::Procedure("SetMinimumGasPrice", jsonrpc::PARAMS_BY_POSITION,
-                         jsonrpc::JSON_STRING,"param01", jsonrpc::JSON_STRING,
+                         jsonrpc::JSON_STRING, "param01", jsonrpc::JSON_STRING,
                          NULL),
       &IsolatedServer::SetMinimumGasPriceI);
   AbstractServer<IsolatedServer>::bindAndAddMethod(
@@ -107,9 +106,9 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
           "Insufficient Balance: " + sender->GetBalance().str());
     }
 
-    if(m_gasPrice > tx.GetGasPrice())
-    {
-      throw JsonRpcException(RPC_INVALID_PARAMETER, "Minimum gas price greater: "+m_gasPrice.str());
+    if (m_gasPrice > tx.GetGasPrice()) {
+      throw JsonRpcException(RPC_INVALID_PARAMETER,
+                             "Minimum gas price greater: " + m_gasPrice.str());
     }
 
     TransactionReceipt txreceipt;
@@ -140,20 +139,17 @@ string IsolatedServer::IncreaseBlocknum(const uint32_t& delta) {
   return to_string(m_blocknum);
 }
 
-string IsolatedServer::SetMinimumGasPrice(const string& gasPrice)
-{
+string IsolatedServer::SetMinimumGasPrice(const string& gasPrice) {
   uint128_t newGasPrice;
-  try
-  { 
+  try {
     newGasPrice = move(uint128_t(gasPrice));
+  } catch (exception& e) {
+    throw JsonRpcException(RPC_INVALID_PARAMETER,
+                           "Gas price should be numeric");
   }
-  catch(exception& e)
-  {
-    throw JsonRpcException(RPC_INVALID_PARAMETER, "Gas price should be numeric");
-  }
-  if(newGasPrice < 1)
-  {
-    throw JsonRpcException(RPC_INVALID_PARAMETER, "Gas price cannot be less than 1");
+  if (newGasPrice < 1) {
+    throw JsonRpcException(RPC_INVALID_PARAMETER,
+                           "Gas price cannot be less than 1");
   }
 
   m_gasPrice = move(newGasPrice);
@@ -161,7 +157,4 @@ string IsolatedServer::SetMinimumGasPrice(const string& gasPrice)
   return m_gasPrice.str();
 }
 
-string IsolatedServer::GetMinimumGasPrice()
-{
-  return m_gasPrice.str();
-}
+string IsolatedServer::GetMinimumGasPrice() { return m_gasPrice.str(); }
