@@ -69,6 +69,11 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
                          jsonrpc::JSON_STRING,"param01", jsonrpc::JSON_STRING,
                          NULL),
       &IsolatedServer::SetMinimumGasPriceI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetSmartContracts", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_ARRAY, "param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &LookupServer::GetSmartContractsI);
 }
 
 Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
