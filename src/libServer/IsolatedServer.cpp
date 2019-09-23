@@ -73,6 +73,15 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
                          jsonrpc::JSON_ARRAY, "param01", jsonrpc::JSON_STRING,
                          NULL),
       &LookupServer::GetSmartContractsI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetNetworkId", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_STRING, NULL),
+      &LookupServer::GetNetworkIdI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetSmartContractInit", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &LookupServer::GetSmartContractInitI);
 }
 
 Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
