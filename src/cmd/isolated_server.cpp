@@ -52,6 +52,13 @@ int readAccountJsonFromFile(const string& path) {
   return 0;
 }
 
+void createConfigFile() {
+  ofstream configFile;
+  configFile.open("config.xml");
+  configFile << "<nodes></nodes>" << endl;
+  configFile.close();
+}
+
 void help(const char* argv[]) {
   cout << "Usage" << endl;
   cout << argv[0]
@@ -100,12 +107,22 @@ int main(int argc, const char* argv[]) {
 
     LOG_MARKER();
 
+    createConfigFile();
+
     PairOfKey key;
     Peer peer;
 
     Mediator mediator(key, peer);
     Node node(mediator, 0, false);
+    Lookup lk(mediator, NO_SYNC);
     auto vd = make_shared<Validator>(mediator);
+
+    if (!BlockStorage::GetBlockStorage().RefreshAll()) {
+      LOG_GENERAL(WARNING, "BlockStorage::RefreshAll failed");
+    }
+    if (!AccountStore::GetInstance().RefreshDB()) {
+      LOG_GENERAL(WARNING, "AccountStore::RefreshDB failed");
+    }
 
     uint64_t blocknum;
 
@@ -117,10 +134,9 @@ int main(int argc, const char* argv[]) {
       return ERROR_IN_COMMAND_LINE;
     }
 
-    mediator.RegisterColleagues(nullptr, &node, nullptr, vd.get());
+    mediator.RegisterColleagues(nullptr, &node, &lk, vd.get());
 
     AccountStore::GetInstance().Init();
-
     if (readAccountJsonFromFile(accountJsonFilePath)) {
       cerr << "ERROR: "
            << "Unable to parse account json file" << endl;

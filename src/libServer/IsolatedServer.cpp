@@ -82,6 +82,11 @@ IsolatedServer::IsolatedServer(Mediator& mediator,
                          jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
                          NULL),
       &LookupServer::GetSmartContractInitI);
+  AbstractServer<IsolatedServer>::bindAndAddMethod(
+      jsonrpc::Procedure("GetTransaction", jsonrpc::PARAMS_BY_POSITION,
+                         jsonrpc::JSON_OBJECT, "param01", jsonrpc::JSON_STRING,
+                         NULL),
+      &LookupServer::GetTransactionI);
 }
 
 Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
@@ -120,6 +125,41 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
                              "Minimum gas price greater: " + m_gasPrice.str());
     }
 
+    switch (Transaction::GetTransactionType(tx)) {
+      case Transaction::ContractType::NON_CONTRACT:
+        break;
+      case Transaction::ContractType::CONTRACT_CREATION:
+        if (!ENABLE_SC) {
+          throw JsonRpcException(RPC_MISC_ERROR, "Smart contract is disabled");
+        }
+        ret["ContractAddress"] =
+            Account::GetAddressForContract(fromAddr, sender->GetNonce()).hex();
+        break;
+      case Transaction::ContractType::CONTRACT_CALL: {
+        if (!ENABLE_SC) {
+          throw JsonRpcException(RPC_MISC_ERROR, "Smart contract is disabled");
+        }
+        const Account* account =
+            AccountStore::GetInstance().GetAccount(tx.GetToAddr());
+
+        if (account == nullptr) {
+          throw JsonRpcException(RPC_INVALID_ADDRESS_OR_KEY, "To addr is null");
+        }
+
+        else if (!account->isContract()) {
+          throw JsonRpcException(RPC_INVALID_ADDRESS_OR_KEY,
+                                 "Non - contract address called");
+        }
+      } break;
+
+      case Transaction::ContractType::ERROR:
+        throw JsonRpcException(RPC_INVALID_ADDRESS_OR_KEY,
+                               "Code is empty and To addr is null");
+        break;
+      default:
+        throw JsonRpcException(RPC_MISC_ERROR, "Txn type unexpected");
+    }
+
     TransactionReceipt txreceipt;
     AccountStore::GetInstance().UpdateAccountsTemp(m_blocknum,
                                                    3  // Arbitrary values
@@ -129,7 +169,19 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
     AccountStore::GetInstance().SerializeDelta();
     AccountStore::GetInstance().CommitTemp();
 
-    return txreceipt.GetJsonValue();
+    TransactionWithReceipt twr(tx, txreceipt);
+
+    bytes twr_ser;
+
+    twr.Serialize(twr_ser, 0);
+
+    if (!BlockStorage::GetBlockStorage().PutTxBody(tx.GetTranID(), twr_ser)) {
+      LOG_GENERAL(WARNING, "Unable to put tx body");
+    }
+
+    ret["TranID"] = tx.GetTranID().hex();
+    ret["Info"] = "Txn processed";
+    return ret;
 
   } catch (const JsonRpcException& je) {
     throw je;
@@ -138,8 +190,6 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
                 "[Error]" << e.what() << " Input: " << _json.toStyledString());
     throw JsonRpcException(RPC_MISC_ERROR, "Unable to Process");
   }
-
-  return Json::Value();
 }
 
 string IsolatedServer::IncreaseBlocknum(const uint32_t& delta) {
