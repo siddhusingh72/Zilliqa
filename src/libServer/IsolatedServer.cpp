@@ -167,6 +167,8 @@ Json::Value IsolatedServer::CreateTransaction(const Json::Value& _json) {
     }
 
     TransactionReceipt txreceipt;
+
+    txreceipt.SetEpochNum(m_blocknum);
     AccountStore::GetInstance().UpdateAccountsTemp(m_blocknum,
                                                    3  // Arbitrary values
                                                    ,
