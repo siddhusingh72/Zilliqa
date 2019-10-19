@@ -171,7 +171,7 @@ class ConsensusLeader : public ConsensusCommon {
   void LogResponsesStats(unsigned int subsetID);
 
  private:
-  static std::map<Action, std::string> ActionStrings;
+  static std::unordered_map<Action, std::string> ActionStrings;
   std::string GetActionString(Action action) const;
 };
 
