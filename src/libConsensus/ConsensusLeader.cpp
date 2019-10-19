@@ -1046,7 +1046,7 @@ void ConsensusLeader::Audit() {
 #define MAKE_LITERAL_PAIR(s) \
   { s, #s }
 
-map<ConsensusLeader::Action, string> ConsensusLeader::ActionStrings = {
+unordered_map<ConsensusLeader::Action, string> ConsensusLeader::ActionStrings = {
     MAKE_LITERAL_PAIR(SEND_ANNOUNCEMENT),
     MAKE_LITERAL_PAIR(PROCESS_COMMIT),
     MAKE_LITERAL_PAIR(PROCESS_RESPONSE),
