@@ -204,10 +204,7 @@ class ConsensusCommon {
   /// Consensus message processing function
   virtual bool ProcessMessage([[gnu::unused]] const bytes& message,
                               [[gnu::unused]] unsigned int offset,
-                              [[gnu::unused]] const Peer& from) {
-    return false;  // Should be implemented by ConsensusLeader and
-                   // ConsensusBackup
-  }
+                              [[gnu::unused]] const Peer& from) = 0; // If implementation has to be done in child classes
 
   /// The minimum fraction of peers necessary to achieve consensus.
   static constexpr double TOLERANCE_FRACTION = 0.667;
